@@ -28,6 +28,7 @@ public class Job {
     String location;
     double salary;
     int quantity;
+    @Enumerated(EnumType.STRING)
     LevelEnum level;
     @Column(columnDefinition = "mediumtext")
     String description;
@@ -48,6 +49,9 @@ public class Job {
     @JoinTable(name = "job_skill", joinColumns = @JoinColumn(name = "job_id"),
             inverseJoinColumns = @JoinColumn(name = "skill_id"))
     List<Skill> skills;
+
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    List<Resume> resumes;
 
     @PrePersist
     public void handleAddBeforePersist() {

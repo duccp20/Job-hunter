@@ -7,18 +7,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserCreationRequest;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserUpdateRequest;
+import vn.hoidanit.jobhunter.domain.DTO.Request.user.UserCreationRequest;
+import vn.hoidanit.jobhunter.domain.DTO.Request.user.UserUpdateRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserCreationResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserUpdateResponse;
+import vn.hoidanit.jobhunter.domain.DTO.Response.company.CompanyResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.Meta;
 import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.PaginationDTO;
 import vn.hoidanit.jobhunter.domain.entity.Company;
+import vn.hoidanit.jobhunter.domain.entity.Role;
 import vn.hoidanit.jobhunter.domain.entity.User;
 import vn.hoidanit.jobhunter.domain.mapper.UserMapper;
 import vn.hoidanit.jobhunter.exception.AppException;
+import vn.hoidanit.jobhunter.repository.RoleRepository;
 import vn.hoidanit.jobhunter.service.CompanyService;
+import vn.hoidanit.jobhunter.service.RoleService;
 import vn.hoidanit.jobhunter.util.Enum.ErrorCode;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 import vn.hoidanit.jobhunter.service.UserService;
@@ -26,7 +30,6 @@ import vn.hoidanit.jobhunter.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 
 @Service
@@ -40,6 +43,9 @@ public class UserServiceImpl implements UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     CompanyService companyService;
+    private final RoleRepository roleRepository;
+
+    RoleService roleService;
 
 
     @Override
@@ -50,12 +56,19 @@ public class UserServiceImpl implements UserService {
         if (existedUserByEmail)
             throw new AppException(ErrorCode.USER_EXISTED);
 
-        Company company = companyService.getCompanyById(user.getCompany().getId());
-
-
         User newUser = userMapper.toUserFromUserCreationRequest(user);
+
+        if (user.getCompany() != null) {
+            Company company = companyService.getCompanyById(user.getCompany().getId());
+            newUser.setCompany(company);
+        }
+
+        if(user.getRole() != null) {
+            Role role = roleService.handleGetRoleById(user.getRole().getId());
+            newUser.setRole(role);
+        }
+
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
-        newUser.setCompany(company);
 
         userRepository.save(newUser);
 
@@ -100,38 +113,33 @@ public class UserServiceImpl implements UserService {
     public void handleDeleteUser(long id) {
 
         boolean existedUser = userRepository.existsById(id);
-        if(existedUser) {
+        if (existedUser) {
             userRepository.deleteById(id);
         } else throw new AppException(ErrorCode.USER_NOT_EXISTED);
     }
 
 
-
     @Override
-    public UserUpdateResponse handleUpdateUser(long id, UserUpdateRequest userUpdateRequest) {
+    public UserUpdateResponse handleUpdateUser(UserUpdateRequest userUpdateRequest) {
 
-        User currentUser = userRepository.findUserById(id);
-        if (currentUser == null) {
-            throw new AppException(ErrorCode.USER_NOT_EXISTED);
-        }
-
-        if (userUpdateRequest.getCompany() == null) {
-            throw new AppException(ErrorCode.COMPANY_NOT_EXISTED);
-        }
-
-        Company company =  companyService.getCompanyById(userUpdateRequest.getCompany().getId());
-        if(company == null) {
-            throw new AppException(ErrorCode.COMPANY_NOT_EXISTED);
-        }
+        User currentUser = userRepository.findById(userUpdateRequest.getId()).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
 
         userMapper.updateUser(currentUser, userUpdateRequest);
-        currentUser.setId(id);
-        currentUser.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
-        currentUser.setCompany(company);
 
-        userRepository.save(currentUser);
+        if (userUpdateRequest.getCompany() != null) {
+            long id = userUpdateRequest.getCompany().getId();
+            Company companyInDB = companyService.getCompanyById(id);
+            currentUser.setCompany(companyInDB);
+        }
 
-        return userMapper.toUserUpdateResponse(currentUser);
+        if (userUpdateRequest.getRole() != null) {
+            Role role = roleService.handleGetRoleById(userUpdateRequest.getRole().getId());
+            currentUser.setRole(role);
+        }
+
+        return userMapper.toUserUpdateResponse(userRepository.save(currentUser));
     }
 
     @Override

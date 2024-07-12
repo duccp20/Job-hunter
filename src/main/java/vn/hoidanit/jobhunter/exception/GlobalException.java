@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
@@ -46,6 +47,29 @@ public class GlobalException {
 
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
+
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    ResponseEntity<ApiResponse> handlingHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+        ErrorCode errorCode = ErrorCode.WRONG_ENUM_VALUE;
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setStatusCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+
+        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
+    }
+
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    ResponseEntity<ApiResponse> handlingIllegalArgumentException(IllegalArgumentException exception) {
+        ErrorCode errorCode = ErrorCode.INVALID_ARGUMENT;
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setStatusCode(errorCode.getCode());
+        apiResponse.setMessage(exception.getMessage());
+
+        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
+    }
+
 
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,

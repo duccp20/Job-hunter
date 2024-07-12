@@ -12,15 +12,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-import vn.hoidanit.jobhunter.config.SecurityUtil;
 import vn.hoidanit.jobhunter.domain.DTO.Request.LoginRequest;
+import vn.hoidanit.jobhunter.domain.DTO.Request.user.UserCreationRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Response.LoginResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.ApiResponse;
+import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserCreationResponse;
 import vn.hoidanit.jobhunter.domain.entity.User;
 import vn.hoidanit.jobhunter.exception.AppException;
 import vn.hoidanit.jobhunter.service.AuthService;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.Enum.ErrorCode;
+import vn.hoidanit.jobhunter.util.Enum.SuccessCode;
 import vn.hoidanit.jobhunter.util.JwtTokenUtils;
 
 @RestController
@@ -44,6 +46,19 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<UserCreationResponse>> handleRegister(@RequestBody UserCreationRequest user) {
+
+        SuccessCode successCode = SuccessCode.CREATED;
+
+        return ResponseEntity.status(successCode.getStatusCode()).body(
+                ApiResponse.<UserCreationResponse>builder()
+                        .statusCode(successCode.getCode())
+                        .message(successCode.getMessage())
+                        .data(userService.handleCreateUser(user))
+                        .build());
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> handleLogin(@Valid @RequestBody LoginRequest loginRequest) {
 
@@ -62,27 +77,19 @@ public class AuthController {
 
     @GetMapping("/account")
     public ResponseEntity<ApiResponse<LoginResponse>> handleFetchUserLogin() {
-        String email = SecurityUtil.getCurrentUserLogin().isPresent() ?
-                SecurityUtil.getCurrentUserLogin().get() : "";
 
-        User user = userService.handleGetUserByEmail(email);
+        SuccessCode successCode = SuccessCode.GET_SUCCESS;
 
-        LoginResponse.UserLogin userLogin = LoginResponse.UserLogin
+        LoginResponse res = LoginResponse
                 .builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getName())
+                .user(authService.handleFetchUserLogin())
                 .build();
 
         return ResponseEntity.ok().body(
-                ApiResponse.<LoginResponse>
-                                builder()
-                        .statusCode(200)
-                        .message("Fetch Api Success")
-                        .data(LoginResponse
-                                .builder()
-                                .user(userLogin)
-                                .build())
+                ApiResponse.<LoginResponse>builder()
+                        .statusCode(successCode.getCode())
+                        .message(successCode.getMessage())
+                        .data(res)
                         .build()
         );
     }
@@ -101,11 +108,13 @@ public class AuthController {
             throw new AppException(ErrorCode.Token_Not_Valid);
         }
 
-       return this.authService.handleCreateAccessAndRefreshToken(email);
+        return this.authService.handleCreateAccessAndRefreshToken(email);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> handleLogout() {
+
+        this.authService.handleLogout();
 
         ResponseCookie deleteRefreshTokenCookie = ResponseCookie
                 .from("refresh_token", null)
@@ -116,15 +125,12 @@ public class AuthController {
                 // .domain("example.com")  nếu không set, thì chỉ chính là same domain (không tính sub domain)
                 .build();
 
-        this.authService.handleLogout();
 
-        return ResponseEntity.status(HttpStatus.CREATED.value())
+        return ResponseEntity.status(HttpStatus.OK.value())
                 .header(HttpHeaders.SET_COOKIE, deleteRefreshTokenCookie.toString())
-                .body(
-                        ApiResponse.<Void>builder()
-                                .statusCode(HttpStatus.CREATED.value())
-                                .message("Logout Successs")
-                                .build()
-                );
-    };
+                .body(ApiResponse.<Void>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Logout Success")
+                        .build());
+    }
 }

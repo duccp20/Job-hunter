@@ -3,11 +3,9 @@ package vn.hoidanit.jobhunter.domain.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserUpdateRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Request.skill.SkillRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Response.skill.SkillResponse;
 import vn.hoidanit.jobhunter.domain.entity.Skill;
-import vn.hoidanit.jobhunter.domain.entity.User;
 
 @Mapper(componentModel = "spring")
 public interface SkillMapper {

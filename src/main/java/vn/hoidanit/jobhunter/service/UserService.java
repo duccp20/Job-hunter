@@ -3,9 +3,8 @@ package vn.hoidanit.jobhunter.service;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserCreationRequest;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserRequest;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserUpdateRequest;
+import vn.hoidanit.jobhunter.domain.DTO.Request.user.UserCreationRequest;
+import vn.hoidanit.jobhunter.domain.DTO.Request.user.UserUpdateRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserCreationResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserUpdateResponse;
@@ -13,7 +12,6 @@ import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.PaginationDTO;
 import vn.hoidanit.jobhunter.domain.entity.User;
 
 
-import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
 
@@ -27,7 +25,7 @@ public interface UserService {
 
     void handleDeleteUser(long id);
 
-    UserUpdateResponse handleUpdateUser(long id, UserUpdateRequest userUpdateRequest);
+    UserUpdateResponse handleUpdateUser(UserUpdateRequest userUpdateRequest);
 
     User handleGetUserByEmail(String email);
 

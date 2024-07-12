@@ -15,6 +15,7 @@ import vn.hoidanit.jobhunter.domain.entity.Job;
 public interface JobMapper {
 
 
+    @Mapping(target = "resumes", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "id", ignore = true)
@@ -28,15 +29,15 @@ public interface JobMapper {
     JobCreationResponse toJobCreationResponse(Job newJob);
 
 
+    @Mapping(target = "resumes", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "company", ignore = true)
     void updateJob(@MappingTarget Job job, JobUpdateRequest jobUpdateRequest);
 
     @Mapping(target = "skills", ignore = true)
-    JobUpdateResponse toUpdateJob(Job job);
+    JobUpdateResponse toJobUpdateResponse(Job job);
 
     JobGetResponse toGetJobResponse(Job j);
 }

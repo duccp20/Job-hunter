@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -9,49 +10,51 @@ import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.DTO.Response.LoginResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.ApiResponse;
 import vn.hoidanit.jobhunter.domain.entity.User;
+import vn.hoidanit.jobhunter.domain.mapper.RoleMapper;
 import vn.hoidanit.jobhunter.exception.AppException;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 import vn.hoidanit.jobhunter.util.Enum.ErrorCode;
 import vn.hoidanit.jobhunter.util.JwtTokenUtils;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final UserService userService;
     private final JwtTokenUtils jwtTokenUtils;
     private final UserRepository userRepository;
+    private final RoleMapper roleMapper;
 
-    public AuthService(UserService userService, JwtTokenUtils jwtTokenUtils,
-                       UserRepository userRepository) {
-        this.userService = userService;
-        this.jwtTokenUtils = jwtTokenUtils;
-        this.userRepository = userRepository;
-    }
 
     public ResponseEntity<ApiResponse<LoginResponse>> handleCreateAccessAndRefreshToken(String email) {
 
         User user = this.userService.handleGetUserByEmail(email);
-
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
 
-        LoginResponse.UserLogin userLogin = LoginResponse.UserLogin
+        //create access token
+        String accessToken = this.jwtTokenUtils.createAccessToken(user);
+
+        //create refresh token
+        String refreshToken = this.jwtTokenUtils.createRefreshToken(user);
+        this.userService.handleUpdateRefreshToken(email, refreshToken);
+
+
+        LoginResponse.UserLoginResponse userLoginResponse = LoginResponse.UserLoginResponse
                 .builder()
-                .id(user.getId())
                 .name(user.getName())
-                .email(user.getName())
+                .email(user.getEmail())
+                .id(user.getId())
+                .role(roleMapper.toRoleResponse(user.getRole()))
                 .build();
         LoginResponse loginResponse = LoginResponse
                 .builder()
-                .accessToken(this.jwtTokenUtils.createAccessToken(email, userLogin))
-                .user(userLogin).build();
+                .accessToken(accessToken)
+                .user(userLoginResponse)
+                .build();
 
-        String refreshToken = this.jwtTokenUtils.createRefreshToken(email, userLogin);
-
-        this.userService.handleUpdateRefreshToken(email, refreshToken);
-
-        //  Set Refresh Token for Cookie
+        //  Set refresh token to cookie
         ResponseCookie responseCookie = ResponseCookie
                 .from("refresh_token", refreshToken)
                 .httpOnly(true)
@@ -81,5 +84,19 @@ public class AuthService {
 
         userService.handleUpdateRefreshToken(email, "");
 
+    }
+
+    public LoginResponse.UserLoginResponse handleFetchUserLogin() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userService.handleGetUserByEmail(email);
+
+        return LoginResponse.UserLoginResponse
+                .builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .id(user.getId())
+                .role(roleMapper.toRoleResponse(user.getRole()))
+                .build();
     }
 }

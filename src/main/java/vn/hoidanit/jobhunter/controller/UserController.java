@@ -8,11 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserCreationRequest;
-import vn.hoidanit.jobhunter.domain.DTO.Request.User.UserUpdateRequest;
+import vn.hoidanit.jobhunter.domain.DTO.Request.user.UserCreationRequest;
+import vn.hoidanit.jobhunter.domain.DTO.Request.user.UserUpdateRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.ApiResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserCreationResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserResponse;
+import vn.hoidanit.jobhunter.domain.DTO.Response.User.UserUpdateResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.PaginationDTO;
 import vn.hoidanit.jobhunter.domain.entity.User;
 import vn.hoidanit.jobhunter.service.UserService;
@@ -39,15 +40,6 @@ public class UserController {
                         .build());
     }
 
-//    @GetMapping("")
-//    public ResponseEntity<ApiResponse<List<UserResponse>>> handleGetAllUser() {
-//        List<UserResponse> list = userService.handleFetchAllUser(Specification<User> spec, Pag);
-//        return ResponseEntity.ok().body(
-//                ApiResponse.<List<UserResponse>>builder()
-//                        .data(list)
-//                        .build()
-//        );
-//    }
 
     @GetMapping("{id}")
     public ResponseEntity<ApiResponse<UserResponse>> handleGetUserById(@PathVariable long id) {
@@ -57,14 +49,14 @@ public class UserController {
                         .build());
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> handleUpdateUser(
-            @PathVariable long id,
+    @PutMapping
+    public ResponseEntity<ApiResponse<UserUpdateResponse>> handleUpdateUser(
             @RequestBody UserUpdateRequest userUpdateRequest) {
 
+        UserUpdateRequest x = userUpdateRequest;
         return ResponseEntity.ok().body(
-                ApiResponse.<UserResponse>builder()
-                        .data(userService.handleUpdateUser(id, userUpdateRequest))
+                ApiResponse.<UserUpdateResponse>builder()
+                        .data(userService.handleUpdateUser(userUpdateRequest))
                         .build());
     }
 

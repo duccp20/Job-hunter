@@ -11,6 +11,7 @@ import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.PaginationDTO;
 import vn.hoidanit.jobhunter.domain.DTO.Response.skill.SkillResponse;
 import vn.hoidanit.jobhunter.domain.entity.Job;
 import vn.hoidanit.jobhunter.domain.entity.Skill;
+import vn.hoidanit.jobhunter.domain.entity.Subscriber;
 import vn.hoidanit.jobhunter.domain.mapper.SkillMapper;
 import vn.hoidanit.jobhunter.exception.AppException;
 import vn.hoidanit.jobhunter.repository.SkillRepository;
@@ -92,8 +93,10 @@ public class SkillServiceImpl implements SkillService {
         );
 
         List<Job> jobs = skill.getJobs();
-
         jobs.forEach(j -> j.getSkills().remove(skill));
+
+        List<Subscriber> subscribers = skill.getSubscribers();
+        subscribers.forEach(s -> s.getSkills().remove(skill));
 
         skillRepository.deleteById(id);
     }

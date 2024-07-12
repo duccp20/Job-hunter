@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.config.JwtConfiguration;
 import vn.hoidanit.jobhunter.domain.DTO.Response.LoginResponse;
+import vn.hoidanit.jobhunter.domain.entity.User;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -40,7 +41,7 @@ public class JwtTokenUtils {
         this.jwtConfiguration = jwtConfiguration;
     }
 
-    public String createAccessToken(String email, LoginResponse.UserLogin userLogin) {
+    public String createAccessToken(User user) {
         Instant now = Instant.now();
         Instant validity = now.plus(accessTokenExpiration, ChronoUnit.SECONDS);
 
@@ -48,12 +49,17 @@ public class JwtTokenUtils {
         listPermission.add("ROLE_USER_CREATE");
         listPermission.add("ROLE_USER_UPDATE");
 
+//        User information in token
+        LoginResponse.UserToken userToken = new LoginResponse.UserToken();
+        userToken.setId(user.getId());
+        userToken.setName(user.getName());
+        userToken.setEmail(user.getEmail());
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(email)
-                .claim("user", userLogin)
+                .subject(user.getEmail())
+                .claim("user", userToken)
                 .claim("permission", listPermission)
                 .build();
 
@@ -63,16 +69,22 @@ public class JwtTokenUtils {
                 claims)).getTokenValue();
     }
 
-    public String createRefreshToken(String email, LoginResponse.UserLogin userLogin) {
+    public String createRefreshToken(User user) {
         Instant now = Instant.now();
         Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
+
+        //        User information in token
+        LoginResponse.UserToken userToken = new LoginResponse.UserToken();
+        userToken.setId(user.getId());
+        userToken.setName(user.getName());
+        userToken.setEmail(user.getEmail());
 
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(email)
-                .claim("user", userLogin)
+                .subject(user.getEmail())
+                .claim("user", userToken)
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JwtConfiguration.JWT_ALGORITHM).build();
@@ -83,7 +95,7 @@ public class JwtTokenUtils {
 
     public Jwt checkValidRefreshToken(String refreshToken) {
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(
-               this.jwtConfiguration.getSecretKey()).macAlgorithm(JwtConfiguration.JWT_ALGORITHM).build();
+                this.jwtConfiguration.getSecretKey()).macAlgorithm(JwtConfiguration.JWT_ALGORITHM).build();
         try {
             return jwtDecoder.decode(refreshToken);
         } catch (Exception e) {

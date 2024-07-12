@@ -3,6 +3,7 @@ package vn.hoidanit.jobhunter.domain.DTO.Request.job;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import vn.hoidanit.jobhunter.domain.DTO.Request.company.CompanyCreationRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Request.skill.SkillRequest;
 import vn.hoidanit.jobhunter.domain.entity.Skill;
 
@@ -18,4 +19,5 @@ import java.util.List;
 public class JobCreationRequest extends JobRequest{
 
     List<SkillRequest> skills = new ArrayList<>();
+    CompanyCreationRequest company;
 }

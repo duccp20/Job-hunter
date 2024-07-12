@@ -11,6 +11,7 @@ import vn.hoidanit.jobhunter.domain.DTO.Request.company.CompanyRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Request.company.CompanyUpdateRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Response.User.ApiResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.company.CompanyResponse;
+import vn.hoidanit.jobhunter.domain.DTO.Response.job.JobGetResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.PaginationDTO;
 import vn.hoidanit.jobhunter.domain.entity.Company;
 import vn.hoidanit.jobhunter.service.CompanyService;
@@ -85,6 +86,20 @@ public class CompanyController {
                         .statusCode(200)
                         .message(SuccessCode.DELETED.getMessage())
                         .data(null)
+                        .build()
+        );
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<ApiResponse<CompanyResponse>> handleGetCompany(
+            @PathVariable long id
+    ) {
+        SuccessCode getSuccess = SuccessCode.GET_SUCCESS;
+        return ResponseEntity.ok(
+                ApiResponse.<CompanyResponse>builder()
+                        .statusCode(getSuccess.getCode())
+                        .message(getSuccess.getMessage())
+                        .data(companyService.handleGetCompany(id))
                         .build()
         );
     }

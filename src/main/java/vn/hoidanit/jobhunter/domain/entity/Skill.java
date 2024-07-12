@@ -16,6 +16,7 @@ import java.util.List;
 @Setter
 @Getter
 @Builder
+@Table(name = "skills")
 public class Skill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +33,11 @@ public class Skill {
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "skills")
     @JsonIgnore
     List<Job> jobs;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "skills")
+    @JsonIgnore
+    List<Subscriber> subscribers;
+
     @PrePersist
     public void handleAddBeforePersist() {
         this.createdAt = Instant.now();
@@ -47,4 +53,5 @@ public class Skill {
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
     }
+
 }

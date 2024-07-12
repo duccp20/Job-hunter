@@ -8,7 +8,7 @@
 //import org.springframework.http.server.ServletServerHttpResponse;
 //import org.springframework.web.bind.annotation.ControllerAdvice;
 //import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-//import vn.hoidanit.jobhunter.domain.DTO.Response.User.ApiResponse;
+//import vn.hoidanit.jobhunter.domain.DTO.Response.user.ApiResponse;
 //
 //@ControllerAdvice
 //public class FormatApiResponse implements ResponseBodyAdvice<Object> {

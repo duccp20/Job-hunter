@@ -9,16 +9,16 @@ import vn.hoidanit.jobhunter.domain.DTO.Request.job.JobCreationRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Request.job.JobUpdateRequest;
 import vn.hoidanit.jobhunter.domain.DTO.Response.job.JobCreationResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.job.JobGetResponse;
-import vn.hoidanit.jobhunter.domain.DTO.Response.job.JobResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.job.JobUpdateResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.Meta;
 import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.PaginationDTO;
-import vn.hoidanit.jobhunter.domain.DTO.Response.skill.SkillResponse;
+import vn.hoidanit.jobhunter.domain.entity.Company;
 import vn.hoidanit.jobhunter.domain.entity.Job;
 import vn.hoidanit.jobhunter.domain.entity.Skill;
 import vn.hoidanit.jobhunter.domain.mapper.JobMapper;
 import vn.hoidanit.jobhunter.domain.mapper.SkillMapper;
 import vn.hoidanit.jobhunter.exception.AppException;
+import vn.hoidanit.jobhunter.repository.CompanyRepository;
 import vn.hoidanit.jobhunter.repository.JobRepository;
 import vn.hoidanit.jobhunter.repository.SkillRepository;
 import vn.hoidanit.jobhunter.service.JobService;
@@ -37,6 +37,8 @@ public class JobServiceImpl implements JobService {
 
     private final SkillMapper skillMapper;
     private final SkillRepository skillRepository;
+
+    private final CompanyRepository companyRepository;
 
     @Override
     public JobCreationResponse handleCreateJob(JobCreationRequest jobCreationRequest) {
@@ -57,6 +59,15 @@ public class JobServiceImpl implements JobService {
         List<Skill> availableSkills = skillRepository.findByIdIn(ListIdSkill);
 
         newJob.setSkills(availableSkills);
+
+        if(jobCreationRequest.getCompany() != null) {
+            Optional<Company> company = companyRepository.findById(jobCreationRequest.getCompany().getId());
+            if(company.isPresent()) {
+                newJob.setCompany(company.get());
+            }else {
+                newJob.setCompany(null);
+            }
+        }
 
         jobRepository.save(newJob);
 
@@ -90,7 +101,17 @@ public class JobServiceImpl implements JobService {
         List<Skill> availableSkills = skillRepository.findByIdIn(listIdSkills);
         job.setSkills(availableSkills);
 
-        JobUpdateResponse jobUpdateResponse = jobMapper.toUpdateJob(jobRepository.save(job));
+        if(jobUpdateRequest.getCompany() != null) {
+            Optional<Company> company = companyRepository.findById(jobUpdateRequest.getCompany().getId());
+            if(company.isPresent()) {
+                job.setCompany(company.get());
+            } else {
+                job.setCompany(null);
+            }
+        }
+
+
+        JobUpdateResponse jobUpdateResponse = jobMapper.toJobUpdateResponse(jobRepository.save(job));
 
         List<String> nameSkills = new ArrayList<>();
         for (Skill s: availableSkills) {
@@ -105,7 +126,7 @@ public class JobServiceImpl implements JobService {
     @Override
     public PaginationDTO handleGetAllJobs(Specification<Job> spec, Pageable pageable) {
 
-        Page<Job> jobsPage = jobRepository.findAll(pageable);
+        Page<Job> jobsPage = jobRepository.findAll(spec, pageable);
 
         List<Job> jobs = jobsPage.getContent();
 
@@ -146,5 +167,11 @@ public class JobServiceImpl implements JobService {
         );
 
         jobRepository.deleteById(job.getId());
+    }
+
+    @Override
+    public List<Job> getJobsBySkills(List<Skill> skill) {
+
+        return jobRepository.findBySkillsIn(skill);
     }
 }

@@ -103,7 +103,17 @@ public class CompanyServiceImpl implements CompanyService {
 
         Optional<Company> company = companyRepository.findById(id);
 
-        return company.orElse(null);
+        return company.isPresent() ? company.get() : null;
+    }
+
+    @Override
+    public CompanyResponse handleGetCompany(long id) {
+
+        Company company = companyRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.COMPANY_NOT_EXISTED)
+        );
+
+        return companyMapper.toCompanyResponse(company);
     }
 
 //    @Override

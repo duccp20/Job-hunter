@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class StaticResourcesWebConfiguration
         implements WebMvcConfigurer {
-    @Value("${file.upload-file.base-path}")
+    @Value("${file.upload-file.base-uri}")
     private String basePath;
     //
     //thay the' "/storage/** = /basePath/** -> storage == vs basePath"

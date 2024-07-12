@@ -12,7 +12,8 @@ public enum SuccessCode {
     CREATED(201, "Created Successfully!", HttpStatus.CREATED),
     DELETED (200, "Deleted Successfully!", HttpStatus.OK),
     UPDATED(200, "Updated Successfully", HttpStatus.OK),
-    GET_SUCCESS(200, "Get Successfully" , HttpStatus.OK);
+    GET_SUCCESS(200, "Get Successfully" , HttpStatus.OK),
+    UPLOADED_FILE(200, "Uploaded File Successfully", HttpStatus.OK);
     private final int code;
     private final String message;
     private final HttpStatusCode statusCode;

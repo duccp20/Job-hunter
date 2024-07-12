@@ -11,6 +11,8 @@ import vn.hoidanit.jobhunter.domain.entity.Company;
 @Mapper(componentModel = "spring")
 public interface CompanyMapper {
 
+    @Mapping(target = "users", ignore = true)
+    @Mapping(target = "jobs", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "id", ignore = true)
@@ -21,6 +23,8 @@ public interface CompanyMapper {
     CompanyResponse toCompanyResponse(Company company);
 
 
+    @Mapping(target = "users", ignore = true)
+    @Mapping(target = "jobs", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "id", source = "id")

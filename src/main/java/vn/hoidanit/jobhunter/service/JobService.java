@@ -9,6 +9,9 @@ import vn.hoidanit.jobhunter.domain.DTO.Response.job.JobGetResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.job.JobUpdateResponse;
 import vn.hoidanit.jobhunter.domain.DTO.Response.pagination.PaginationDTO;
 import vn.hoidanit.jobhunter.domain.entity.Job;
+import vn.hoidanit.jobhunter.domain.entity.Skill;
+
+import java.util.List;
 
 public interface JobService {
     JobCreationResponse handleCreateJob(JobCreationRequest jobCreationRequest);
@@ -20,4 +23,6 @@ public interface JobService {
     JobGetResponse handleGetJob(Long id);
 
     void handleDeleteJob(long id);
+
+    List<Job> getJobsBySkills(List<Skill> skill);
 }

@@ -6,8 +6,10 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 import vn.hoidanit.jobhunter.config.SecurityUtil;
 import vn.hoidanit.jobhunter.domain.BaseEntity;
+import vn.hoidanit.jobhunter.util.Enum.GenderEnum;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -25,7 +27,11 @@ public class User {
     String name;
     String email;
     String password;
-    String phone;
+    int age;
+    @Enumerated(value = EnumType.STRING)
+    GenderEnum gender;
+
+    String address;
     @Column(columnDefinition = "mediumtext")
     String refreshToken;
     Instant createdAt;
@@ -35,6 +41,13 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "company_id")
     Company company;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    List<Resume> resumes;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @PrePersist
     public void handleAddBeforePersist() {
